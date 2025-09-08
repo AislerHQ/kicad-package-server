@@ -1,0 +1,22 @@
+{
+  "$schema": "https://gitlab.com/kicad/code/kicad/-/raw/master/kicad/pcm/schemas/pcm.v1.schema.json#/definitions/Repository",
+  "maintainer": {
+    "contact": {
+      "web": "https://aisler.net/en/support/new"
+    },
+    "name": "The AISLER KiCad team"
+  },
+  "name": "KiCad Universe repository",
+  "packages": {
+    "sha256": "<%= @packages_sha256 %>",
+    "update_time_utc": "<%= @latest_update.strftime("%Y-%m-%d %H:%M:%S") %>",
+    "update_timestamp": <%= @latest_update.to_i %>,
+    "url": "<%= File.join(BASE_URL, 'packages.json') %>"
+  },
+  "resources": {
+    "sha256": "<%= @resources_sha256 %>",
+    "update_time_utc": "<%= @latest_update.strftime("%Y-%m-%d %H:%M:%S") %>",
+    "update_timestamp": <%= @latest_update.to_i %>,
+    "url": "<%= File.join(BASE_URL, 'resources.zip') %>"
+  }
+}
