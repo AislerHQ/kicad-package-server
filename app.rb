@@ -12,7 +12,7 @@ PLAUSIBLE_ENABLED = (ENV.fetch('PLAUSIBLE_ENABLED', 'true') == 'true').freeze
 PLAUSIBLE_DOMAIN = ENV.fetch('PLAUSIBLE_DOMAIN', false).freeze
 
 # Database configuration
-DB = Sequel.connect(ENV.fetch('DATABASE_URL', 'postgres://kicad_pkg_server:aisler@localhost/kicad_pkg_server'))
+DB = Sequel.connect(ENV.fetch('DATABASE_URL', 'sqlite://db/sqlite.db'))
 
 # Load migrations
 Sequel.extension :migration
