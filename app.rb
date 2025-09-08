@@ -8,6 +8,8 @@ loader.setup
 BASE_URL = ENV.fetch('BASE_URL', 'http://localhost:9292')
 KICAD_SCHEMA_URL = ENV.fetch('KICAD_SCHEMA_URL', 'https://go.kicad.org/pcm/schemas/v1')
 REDIRECT_URL = ENV.fetch('REDIRECT_URL', 'https://community.aisler.net')
+PLAUSIBLE_ENABLED = ENV.fetch('PLAUSIBLE_ENABLED')
+PLAUSIBLE_DOMAIN = ENV.fetch('PLAUSIBLE_DOMAIN')
 
 # Database configuration
 DB = Sequel.connect(ENV.fetch('DATABASE_URL', 'postgres://kicad_pkg_server:aisler@localhost/kicad_pkg_server'))
@@ -49,8 +51,16 @@ class KiCadPkgServer < Sinatra::Base
     
     begin
       # Clone repository
-      # # , checkout_branch: 'HEAD'
       repo = Rugged::Repository.clone_at(git_url, temp_dir)
+
+      tag_ref = repo.references["refs/tags/#{request_data['tag']}"]
+      if tag_ref
+        target_commit = repo.lookup(tag_ref.target_id)
+        repo.checkout(target_commit.oid, strategy: :force)
+        repo.head = tag_ref.name
+      elsif request_data['tag']
+        puts "Tag #{request_data['tag']} not found"
+      end
       
       # Read & validate meta.json
       meta_path = File.join(temp_dir, 'metadata.json')
