@@ -5,11 +5,11 @@ loader = Zeitwerk::Loader.new
 loader.push_dir('models')
 loader.setup
 
-BASE_URL = ENV.fetch('BASE_URL', 'http://localhost:9292')
-KICAD_SCHEMA_URL = ENV.fetch('KICAD_SCHEMA_URL', 'https://go.kicad.org/pcm/schemas/v1')
-REDIRECT_URL = ENV.fetch('REDIRECT_URL', 'https://community.aisler.net')
-PLAUSIBLE_ENABLED = ENV.fetch('PLAUSIBLE_ENABLED')
-PLAUSIBLE_DOMAIN = ENV.fetch('PLAUSIBLE_DOMAIN')
+BASE_URL = ENV.fetch('BASE_URL', 'http://localhost:9292').freeze
+KICAD_SCHEMA_URL = ENV.fetch('KICAD_SCHEMA_URL', 'https://go.kicad.org/pcm/schemas/v1').freeze
+REDIRECT_URL = ENV.fetch('REDIRECT_URL', 'https://community.aisler.net').freeze
+PLAUSIBLE_ENABLED = (ENV.fetch('PLAUSIBLE_ENABLED', 'true') == 'true').freeze
+PLAUSIBLE_DOMAIN = ENV.fetch('PLAUSIBLE_DOMAIN', false).freeze
 
 # Database configuration
 DB = Sequel.connect(ENV.fetch('DATABASE_URL', 'postgres://kicad_pkg_server:aisler@localhost/kicad_pkg_server'))
@@ -31,6 +31,10 @@ class KiCadPkgServer < Sinatra::Base
     {
       error: env['sinatra.error'].message
     }.to_json
+  end
+
+  after do
+    track_request(request)
   end
   
   # Push endpoint
@@ -119,7 +123,7 @@ class KiCadPkgServer < Sinatra::Base
   end
 
   get '/' do
-    if request.env['HTTP_USER_AGENT'].include? 'KiCad'
+    if request.user_agent.include? 'KiCad'
       @latest_update = Package.order(:updated_at).first.updated_at
       @packages_sha256 = Digest::SHA256.hexdigest(Package.all_as_json)
       @resources_sha256 = Digest::SHA256.hexdigest(Package.resources_zip.read)
@@ -155,6 +159,7 @@ class KiCadPkgServer < Sinatra::Base
     
     content_type 'application/zip'
     attachment "package_#{package.id}.zip"
+
     package.zip_data
   end
   
@@ -196,6 +201,24 @@ class KiCadPkgServer < Sinatra::Base
 
     # JSON Schema validator does not yet support draft-07 thus replace with draft-06
     JSON.load(rsp.body.sub(/draft-07/, 'draft-06'))
+  end
+
+  def track_request(request)
+    return unless PLAUSIBLE_ENABLED
+
+    headers = {
+      'User-Agent' => request.user_agent,
+      'Content-Type' => 'application/json',
+      'X-Forwarded-For' => request.ip
+    }
+    payload = {
+      name: 'pageview',
+      url: request.url,
+      domain: PLAUSIBLE_DOMAIN
+    }
+
+    Excon.post('https://plausible.io/api/event', body: JSON.dump(payload), headers: headers)
+  rescue Excon::Error => e
   end
 end
 
