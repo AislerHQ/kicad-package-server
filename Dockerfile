@@ -1,5 +1,5 @@
 # Dockerfile
-FROM ruby:3.4.4-alpine
+FROM ruby:3.4.5-alpine
 
 RUN apk update && apk add --no-cache \
         build-base \

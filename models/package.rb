@@ -14,6 +14,12 @@ class Package < Sequel::Model
         zos.put_next_entry(File.join(pkg.identifier, 'icon.png'))
         zos.write(pkg.icon_data)
       end
+
+      # Required as KiCad PCM expects at least one file
+      if self.empty?
+        zos.put_next_entry(File.join('empty_repository'))
+        zos.write('')
+      end
     end
     io.rewind
 

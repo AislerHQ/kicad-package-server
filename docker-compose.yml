@@ -1,14 +1,15 @@
 services:
-  db:
-    image: postgres:15
+  app:
+    build: .
     environment:
-      POSTGRES_USER: kicad_pkg_server
-      POSTGRES_PASSWORD: aisler
-      POSTGRES_DB: kicad_pkg_server
+      BASE_URL: http://localhost:9292
+      REDIRECT_URL: https://github.com
+      MAINTAINER_NAME: 'My own KiCad Repository'
+      PLAUSIBLE_ENABLED: false
     ports:
-      - "5432:5432"
+      - "9292:9292"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - sqlite_data:/app/db/data
 
 volumes:
-  postgres_data:
+  sqlite_data:

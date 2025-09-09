@@ -8,11 +8,14 @@ loader.setup
 BASE_URL = ENV.fetch('BASE_URL', 'http://localhost:9292').freeze
 KICAD_SCHEMA_URL = ENV.fetch('KICAD_SCHEMA_URL', 'https://go.kicad.org/pcm/schemas/v1').freeze
 REDIRECT_URL = ENV.fetch('REDIRECT_URL', 'https://community.aisler.net').freeze
+MAINTAINER_URL = ENV.fetch('MAINTAINER_URL', 'http://example.com').freeze
+MAINTAINER_NAME = ENV.fetch('MAINTAINER_NAME', 'Private KiCad Repository')
+REPOSITORY_NAME = ENV.fetch('REPOSITORY_NAME', 'Private KiCad Repository')
 PLAUSIBLE_ENABLED = (ENV.fetch('PLAUSIBLE_ENABLED', 'true') == 'true').freeze
 PLAUSIBLE_DOMAIN = ENV.fetch('PLAUSIBLE_DOMAIN', false).freeze
 
 # Database configuration
-DB = Sequel.connect(ENV.fetch('DATABASE_URL', 'sqlite://db/sqlite.db'))
+DB = Sequel.connect(ENV.fetch('DATABASE_URL', 'sqlite://db/data/sqlite.db'))
 
 # Load migrations
 Sequel.extension :migration
@@ -57,13 +60,15 @@ class KiCadPkgServer < Sinatra::Base
       # Clone repository
       repo = Rugged::Repository.clone_at(git_url, temp_dir)
 
-      tag_ref = repo.references["refs/tags/#{request_data['tag']}"]
-      if tag_ref
-        target_commit = repo.lookup(tag_ref.target_id)
-        repo.checkout(target_commit.oid, strategy: :force)
-        repo.head = tag_ref.name
-      elsif request_data['tag']
-        puts "Tag #{request_data['tag']} not found"
+      if request_data.has_key?('tag')
+        tag_ref = repo.references["refs/tags/#{request_data['tag']}"]
+        if tag_ref
+          target_commit = repo.lookup(tag_ref.target_id)
+          repo.checkout(target_commit.oid, strategy: :force)
+          repo.head = tag_ref.name
+        else
+          puts "Tag #{request_data['tag']} not found"
+        end
       end
       
       # Read & validate meta.json
@@ -124,7 +129,7 @@ class KiCadPkgServer < Sinatra::Base
 
   get '/' do
     if request.user_agent.include? 'KiCad'
-      @latest_update = Package.order(:updated_at).first.updated_at
+      @latest_update = Package.order(:updated_at).first&.updated_at || Time.now
       @packages_sha256 = Digest::SHA256.hexdigest(Package.all_as_json)
       @resources_sha256 = Digest::SHA256.hexdigest(Package.resources_zip.read)
 
