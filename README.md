@@ -23,6 +23,8 @@ echo 'plugins' > src/.kicad_pcm
 This helps the application to include the correct sources in the package.
 Optionally place a file called `icon.png` inside the `resources` directory.
 
+For an example of a supported KiCad Plugin, check our PushForKicad plugin at https://github.com/AislerHQ/PushForKiCad
+
 ### Publishing a package
 To publish a package just send a POST request to the server containing the Git repository
 ```bash
