@@ -1,5 +1,5 @@
 # KiCad Package Server
-This application provides you with a dead simple easy to use server for the KiCad Plugin and Content Manager (PCM). It allows to self-host
+This application provides you with a dead simple and easy to use server for the KiCad Plugin and Content Manager (PCM). It allows to self-host
 a centralized repository of plugins, libraries and color themes. It is independent of the official KiCad repository
 provided by the KiCad Services Corporation.
 
