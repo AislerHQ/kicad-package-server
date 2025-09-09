@@ -7,11 +7,11 @@ loader.setup
 
 BASE_URL = ENV.fetch('BASE_URL', 'http://localhost:9292').freeze
 KICAD_SCHEMA_URL = ENV.fetch('KICAD_SCHEMA_URL', 'https://go.kicad.org/pcm/schemas/v1').freeze
-REDIRECT_URL = ENV.fetch('REDIRECT_URL', 'https://community.aisler.net').freeze
+REDIRECT_URL = ENV.fetch('REDIRECT_URL', 'http://example.com').freeze
 MAINTAINER_URL = ENV.fetch('MAINTAINER_URL', 'http://example.com').freeze
 MAINTAINER_NAME = ENV.fetch('MAINTAINER_NAME', 'Private KiCad Repository')
 REPOSITORY_NAME = ENV.fetch('REPOSITORY_NAME', 'Private KiCad Repository')
-PLAUSIBLE_ENABLED = (ENV.fetch('PLAUSIBLE_ENABLED', 'true') == 'true').freeze
+PLAUSIBLE_ENABLED = (ENV.fetch('PLAUSIBLE_ENABLED', 'true') == 'false').freeze
 PLAUSIBLE_DOMAIN = ENV.fetch('PLAUSIBLE_DOMAIN', false).freeze
 
 # Database configuration
