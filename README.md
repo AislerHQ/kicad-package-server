@@ -5,8 +5,10 @@ provided by the KiCad Services Corporation.
 
 
 ## Getting started
-The KiCad Package Server is best served using the Docker based deployment. To run the server execute
+The KiCad Package Server is best served using the Docker based deployment. To run the server first clone this
+repository and then start using Docker Compose
 ```bash
+git clone https://github.com/AislerHQ/kicad-package-server.git && cd kicad-package-server
 docker compose up
 ```
 or check the docker-compose.yml file first for details about the deployment. By default, a SQLite3 database will be used,
