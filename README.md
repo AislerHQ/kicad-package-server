@@ -1,5 +1,5 @@
 # KiCad Package Server
-This application provides a dead simple server for the KiCad Plugin and Content Manager (PCM). It allows to self-host
+This application provides you with a dead simple easy to use server for the KiCad Plugin and Content Manager (PCM). It allows to self-host
 a centralized repository of plugins, libraries and color themes. It is independent of the official KiCad repository
 provided by the KiCad Services Corporation.
 
@@ -40,6 +40,11 @@ curl -X POST http://localhost:9292/api/push \
   -H "Content-Type: application/json" \
   -d '{"url": "https://github.com/AislerHQ/lovely-library.git", "tag": "v0.0.1"}'
 ```
+
+### Adding the repository to KiCad
+Open KiCad and select the "Plugin and Content Manager". Click "Manage" and add a new repository using "+". The URL is either `localhost:9292`
+if deployed locally or the actual domain of your deployment, such as https://packages.aisler.net
+
 
 ### Enable Plausible tracking
 Plausible is a privacy-first web-analytics service hosted in the EU, check https://plausible.io for details. If you want
