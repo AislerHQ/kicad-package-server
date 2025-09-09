@@ -57,6 +57,7 @@ The following settings can be adjusted
 | `REPOSITORY_NAME` | `Private KiCad Repository` | Display name of the KiCad repository                                     |
 | `PLAUSIBLE_ENABLED` | `false`                    | Boolean flag to enable/disable Plausible analytics                       |
 | `PLAUSIBLE_DOMAIN` | `false`                    | Domain configuration for Plausible analytics tracking                    |
+
 These can be set on the docker-compose.yml file.
 
 ## License
