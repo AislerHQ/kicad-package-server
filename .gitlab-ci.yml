@@ -31,4 +31,4 @@ build_image_job:
   tags:
     - docker
   only:
-    - main
+    - internal
