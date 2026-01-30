@@ -9,9 +9,9 @@ BASE_URL = ENV.fetch('BASE_URL', 'http://localhost:9292').freeze
 KICAD_SCHEMA_URL = ENV.fetch('KICAD_SCHEMA_URL', 'https://go.kicad.org/pcm/schemas/v1').freeze
 REDIRECT_URL = ENV.fetch('REDIRECT_URL', 'http://example.com').freeze
 MAINTAINER_URL = ENV.fetch('MAINTAINER_URL', 'http://example.com').freeze
-MAINTAINER_NAME = ENV.fetch('MAINTAINER_NAME', 'Private KiCad Repository')
-REPOSITORY_NAME = ENV.fetch('REPOSITORY_NAME', 'Private KiCad Repository')
-PLAUSIBLE_ENABLED = (ENV.fetch('PLAUSIBLE_ENABLED', 'true') == 'false').freeze
+MAINTAINER_NAME = ENV.fetch('MAINTAINER_NAME', 'Private KiCad Repository').freeze
+REPOSITORY_NAME = ENV.fetch('REPOSITORY_NAME', 'Private KiCad Repository').freeze
+PLAUSIBLE_ENABLED = ENV.fetch('PLAUSIBLE_ENABLED', 'false').downcase == 'true'
 PLAUSIBLE_DOMAIN = ENV.fetch('PLAUSIBLE_DOMAIN', false).freeze
 
 # Database configuration
@@ -27,7 +27,7 @@ class KiCadPkgServer < Sinatra::Base
     set :raise_errors, false
     set :host_authorization, { permitted_hosts: [] }
   end
-  
+
   error do
     content_type :json
     status 500
@@ -39,7 +39,7 @@ class KiCadPkgServer < Sinatra::Base
   after do
     track_request(request)
   end
-  
+
   # Push endpoint
   post '/api/push' do
     content_type :json
@@ -47,15 +47,15 @@ class KiCadPkgServer < Sinatra::Base
     # Parse request body
     request_data = JSON.parse(request.body.read)
     git_url = request_data['url']
-    
+
     unless git_url
       status 400
       return { error: 'Git URL is required' }.to_json
     end
-    
+
     # Create temporary directory for cloning
     temp_dir = Dir.mktmpdir
-    
+
     begin
       # Clone repository
       repo = Rugged::Repository.clone_at(git_url, temp_dir)
@@ -70,7 +70,7 @@ class KiCadPkgServer < Sinatra::Base
           puts "Tag #{request_data['tag']} not found"
         end
       end
-      
+
       # Read & validate meta.json
       meta_path = File.join(temp_dir, 'metadata.json')
       unless File.exist?(meta_path)
@@ -84,18 +84,18 @@ class KiCadPkgServer < Sinatra::Base
         status 400
         return { error: 'metadata.json not valid according to pcm.v1.schema.json', details: validation }.to_json
       end
-      
+
       # Create ZIP file from src directory
       zip_buffer, install_size = create_zip_from_repository(temp_dir)
-      
+
       # Calculate SHA256 and size
       sha256 = Digest::SHA256.hexdigest(zip_buffer.read)
       size = zip_buffer.size
       zip_buffer.rewind
-      
+
       # Create or update package in database
       package = Package.find(url: git_url)
-      
+
       package_data = {
         url: git_url,
         zip_data: Sequel.blob(zip_buffer.read),
@@ -107,20 +107,20 @@ class KiCadPkgServer < Sinatra::Base
         identifier: meta_data['identifier'],
         metadata_json: JSON.dump(meta_data),
       }
-      
+
       if package
         package.update(package_data)
       else
         package = Package.create(package_data)
       end
-      
+
       status 201
       {
         message: 'Package created successfully',
         sha256: sha256,
         size: size
       }.to_json
-      
+
     ensure
       # Clean up temporary directory
       FileUtils.rm_rf(temp_dir) if temp_dir && Dir.exist?(temp_dir)
@@ -139,7 +139,7 @@ class KiCadPkgServer < Sinatra::Base
       redirect REDIRECT_URL
     end
   end
-  
+
   # Packages endpoint
   get '/packages.json' do
     content_type 'application/json'
@@ -156,20 +156,20 @@ class KiCadPkgServer < Sinatra::Base
 
   get '/packages/:id/download.zip' do
     package = Package[params[:id]]
-    
+
     unless package
       status 404
       return { error: 'Package not found' }.to_json
     end
-    
+
     content_type 'application/zip'
     attachment "package_#{package.id}.zip"
 
     package.zip_data
   end
-  
+
   private
-  
+
   def create_zip_from_repository(directory_path)
     size = 0
     io = Zip::OutputStream.write_buffer do |zos|
@@ -226,4 +226,3 @@ class KiCadPkgServer < Sinatra::Base
   rescue Excon::Error => e
   end
 end
-
