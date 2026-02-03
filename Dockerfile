@@ -10,6 +10,8 @@ RUN apk update && apk add --no-cache \
 
 WORKDIR /app
 
+ENV RACK_ENV=production
+
 COPY Gemfile Gemfile.lock ./
 RUN bundle config set clean 'true' && \
     bundle config set deployment 'true' && \
