@@ -180,7 +180,7 @@ class KiCadPkgServer < Sinatra::Base
         if filename == '.kicad_pcm'
           directory = File.read(f)
           source_dir = File.dirname(f)
-        elsif filename == 'pcm_icon.png'
+        elsif filename == 'icon.png'
           zos.put_next_entry('resources/icon.png')
           zos.write(File.read(f))
           size += File.size(f)
